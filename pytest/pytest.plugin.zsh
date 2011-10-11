@@ -8,9 +8,10 @@ _pytest_commands() {
   local -a cmdlist
   _call_program commands py.test --help | while read -A line; do
      # add dashed options for completion only
-     if [[ $line[1] =~ ^- ]]; then
-         cmdlist=($cmdlist "${line[1]%,}:${line[2,-1]}")
+     if ! [[ $line[1] =~ ^- ]]; then
+         continue
      fi
+     cmdlist=($cmdlist "${line[1]%,}:${line[2,-1]}")
 
    done
 
@@ -20,8 +21,10 @@ _pytest_commands() {
 _pytest() {
   local curcontext=$curcontext ret=1
 
-  if ((CURRENT == 2)); then
+  if [[ "$PREFIX" = -* ]]; then
     _pytest_commands
+  else
+    _files
   fi
 }
 
