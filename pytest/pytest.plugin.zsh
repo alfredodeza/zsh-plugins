@@ -11,6 +11,10 @@ _pytest_commands() {
      if ! [[ $line[1] =~ ^- ]]; then
          continue
      fi
+     # Remove `=` operator example values from the help output
+     if [[ $line[1] =~ \= ]]; then
+         line[1]=${line[1][(ws/=/)1]}\=
+     fi
      cmdlist=($cmdlist "${line[1]%,}:${line[2,-1]}")
 
    done
