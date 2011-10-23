@@ -14,7 +14,9 @@ activate
 --------
 Are you up to 15 levels deep into a path and need to activate your Python
 environment? This command will traverse backwards to activate it for you
-without changing directories.
+without changing directories when no arguments are passed::
+
+    activate
 
 Do you have a list of different paths for different environments? List them
 in a zsh array in your `.zshrc` file like so::
