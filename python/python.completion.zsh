@@ -1,4 +1,4 @@
-#compdef cdp
+#compdef cdp try
 
 _cdp_commands() {
   # this function calls IPython and loops over the list of modules
@@ -22,4 +22,4 @@ _cdp() {
   fi
 }
 
-compdef _cdp cdp
+compdef _cdp cdp try
