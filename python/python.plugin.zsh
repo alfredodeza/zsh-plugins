@@ -1,5 +1,5 @@
 # remove pyc files
-alias pyclean='find . -type f -name "*.py[co]" -exec rm -f \{\} \;'
+alias pyclean='find . -type f -name "*.py[co]" -exec rm -f \{\} \; && find . -type d -name "__pycache__" | xargs rm -r && echo "Removed pycs and __pycache__"'
 
 # Does my python module exist?
 try() {
@@ -55,4 +55,11 @@ activate() {
              source $virtualenv
          fi
     fi
+}
+
+welp() {
+    P_VERSION=`python -c "exec 'try: import pkg_resources; print pkg_resources.get_distribution(\'${1}\').version\nexcept Exception: print \'Not found\''"`
+    P_PATH=cdp
+    echo "Path: $(try ${1})"
+    echo "Version: ${P_VERSION}"
 }
