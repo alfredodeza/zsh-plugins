@@ -63,3 +63,14 @@ welp() {
     echo "Path: $(try ${1})"
     echo "Version: ${P_VERSION}"
 }
+
+
+mpass() {
+    if [ $1 ]; then
+        length=$1
+    else
+        length=12
+    fi
+    _hash=`python -c "exec 'import os; print os.urandom(30).encode(\'base64\')[:${length}]'"`
+    echo $_hash
+}
