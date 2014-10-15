@@ -28,6 +28,32 @@ walkup() {
     fi
 }
 
+mkv() {
+    # A helper to create virtualenvs
+    if [[ -n  $virtualensvhome ]] ; then
+        echo "\nThe virtualenvshome variable is not set. Try setting it with"
+        echo "the absolute paths of the home for your virtualenvs::\n"
+        echo " virtualenvshome=$HOME/.virtualenvs"
+        echo ""
+        return
+    fi
+    if [[ $# -eq 1 ]]; then
+        for dir in $virtualenvshome; do
+            if [[ $dir == $1 ]]; then
+                echo "virtualenv $1 already exists, activating..."
+                . $dir/bin/activate
+                return 0
+            else
+                virtualenv "$virtualenvshome/$1"
+                return 0
+            fi
+        done
+    else
+        echo "err... you need to give me a name for the virtualenv to create"
+    fi
+}
+
+
 activate() {
     if ! (( $#virtual_envs )) ; then
         echo "\nThe virtual_envs variable is not set. Try setting it with"
@@ -36,13 +62,14 @@ activate() {
         echo ""
         return
     fi
+    cwd=`pwd`
     if [[ $# -eq 1 ]]; then
         for dir in $virtual_envs; do
             for i in `ls $dir`; do
                 if [[ $i == $1 ]]; then
                     if [[ -d $dir/$i ]] && [[ -f $dir/$i/bin/activate ]]; then
                         . $dir/$i/bin/activate
-                        cd $dir/$i
+                        builtin \cd "$cwd"
                         return 0
                     fi
                 fi
