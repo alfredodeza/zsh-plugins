@@ -6,7 +6,7 @@ _pytest_commands() {
 
   local line
   local -a cmdlist
-  _call_program commands py.test --help | while read -A line; do
+  _call_program commands pytest --help | while read -A line; do
      # add dashed options for completion only
      if ! [[ $line[1] =~ ^- ]]; then
          continue
