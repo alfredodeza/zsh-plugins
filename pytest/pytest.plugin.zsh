@@ -1,12 +1,12 @@
 #compdef pytest
 
 _pytest_commands() {
-  # this function calls py.test and loops over the list of apps and options
+  # this function calls pytest and loops over the list of apps and options
   # and constructs the help menu with it
 
   local line
   local -a cmdlist
-  _call_program commands py.test --help | while read -A line; do
+  _call_program commands pytest --help | while read -A line; do
      # add dashed options for completion only
      if ! [[ $line[1] =~ ^- ]]; then
          continue
@@ -19,7 +19,7 @@ _pytest_commands() {
 
    done
 
- _describe -t commands 'py.test commands' cmdlist && ret=0
+ _describe -t commands 'pytest commands' cmdlist && ret=0
 }
 
 _pytest() {
@@ -32,4 +32,4 @@ _pytest() {
   fi
 }
 
-compdef _pytest py.test
+compdef _pytest pytest
