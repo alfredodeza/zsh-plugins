@@ -6,10 +6,21 @@ try() {
     python -c "exec 'try: import ${1} as _; print _.__file__\nexcept Exception, e: print e'"
 }
 
+# Activate and then change dirs to package directory
+acdp() {
+    activate $1
+    cdp $1
+}
+
+acdp3() {
+    activate $1
+    cdp3 $1
+}
+
 # change to python package directory
 cdp() {
     module=$(sed 's/-/_/g' <<< $1)
-    MODULE_DIRECTORY=`python -c "exec 'try: import os.path as _, ${module}; print _.dirname(_.realpath(${module}.__file__))\nexcept Exception, e: print e'"`
+    MODULE_DIRECTORY=`python -c "exec 'try: import os.path as _, ${module}; print _.dirname(_.realpath(${module}.__file__))\nexcept Exception, e: print(e)'"`
     if  [[ -d $MODULE_DIRECTORY ]]; then
         cd $MODULE_DIRECTORY
     else
@@ -19,7 +30,8 @@ cdp() {
 
 # change to python package directory
 cdp3() {
-    MODULE_DIRECTORY=`python3 -c "exec('try: import os.path as _, ${1}; print(_.dirname(_.realpath(${1}.__file__)))\nexcept Exception as e: print(e)')"`
+    module=$(sed 's/-/_/g' <<< $1)
+    MODULE_DIRECTORY=`python3 -c "exec('try: import os.path as _, ${module}; print(_.dirname(_.realpath(${module}.__file__)))\nexcept Exception as e: print(e)')"`
     if  [[ -d $MODULE_DIRECTORY ]]; then
         cd $MODULE_DIRECTORY
     else
@@ -39,7 +51,33 @@ walkup() {
     fi
 }
 
+rmv() {
+    #set -x
+    # A helper to remove virtualenvs
+    if [[ -n  $virtualensvhome ]] ; then
+        echo "\nThe virtualenvshome variable is not set. Try setting it with"
+        echo "the absolute paths of the home for your virtualenvs::\n"
+        echo " virtualenvshome=$HOME/.virtualenvs"
+        echo ""
+        return
+    fi
+
+    if [[ $# -eq 1 ]]; then
+        for dir in `find $virtualenvshome -maxdepth 1 -type d -name $1`; do
+            echo "found virtualenv $1, removing... $dir"
+            rm -rf "$dir"
+            return 0
+        done
+        echo "could not find virtualenv $1, make sure it exists in $virtualenvshome/$1"
+        return 1
+    else
+        echo "err... you need to give me a name for the virtualenv to create"
+        return 1
+    fi
+}
+
 mkv() {
+    set -x
     # A helper to create virtualenvs
     if [[ -n  $virtualensvhome ]] ; then
         echo "\nThe virtualenvshome variable is not set. Try setting it with"
@@ -50,12 +88,13 @@ mkv() {
     fi
     if [[ $# -eq 1 ]]; then
         for dir in $virtualenvshome; do
+            echo $dir
             if [[ $dir == $1 ]]; then
                 echo "virtualenv $1 already exists, activating..."
                 . $dir/bin/activate
                 return 0
             else
-                virtualenv "$virtualenvshome/$1"
+                virtualenv -p python3.6 "$virtualenvshome/$1"
                 return 0
             fi
         done
