@@ -1,24 +1,33 @@
 # remove pyc files
-alias pyclean='find . -type f -name "*.py[co]" -exec rm -f \{\} \; && find . -type d -name "__pycache__" | xargs rm -r && echo "Removed pycs and __pycache__"'
+alias pyclean='find . \
+    \( -type f -name "*.py[co]" -o -type d -name "__pycache__" \) -delete &&
+    echo "Removed pycs and __pycache__"'
 
 # Does my python module exist?
 try() {
-    python -c "exec 'try: import ${1} as _; print _.__file__\nexcept Exception, e: print e'"
+    python -c "
+exec('''
+try:
+    import ${1} as _
+    print(_.__file__)
+except Exception as e:
+    print(e)
+''')"
 }
 
 # Activate and then change dirs to package directory
+acdp2() {
+    activate $1
+    cdp $1
+}
+
 acdp() {
     activate $1
     cdp $1
 }
 
-acdp3() {
-    activate $1
-    cdp3 $1
-}
-
 # change to python package directory
-cdp() {
+cdp2() {
     module=$(sed 's/-/_/g' <<< $1)
     MODULE_DIRECTORY=`python -c "exec 'try: import os.path as _, ${module}; print _.dirname(_.realpath(${module}.__file__))\nexcept Exception, e: print(e)'"`
     if  [[ -d $MODULE_DIRECTORY ]]; then
@@ -28,10 +37,27 @@ cdp() {
     fi
 }
 
+csv2json () {
+	python3 -c "
+exec('''
+import csv,json
+print(json.dumps(list(csv.reader(open(\'${1}\')))))
+''')
+"
+}
+
+
 # change to python package directory
-cdp3() {
+cdp() {
     module=$(sed 's/-/_/g' <<< $1)
-    MODULE_DIRECTORY=`python3 -c "exec('try: import os.path as _, ${module}; print(_.dirname(_.realpath(${module}.__file__)))\nexcept Exception as e: print(e)')"`
+    MODULE_DIRECTORY=`python3 -c "
+exec('''
+try:
+    import os.path as _, ${module}
+    print(_.dirname(_.realpath(${module}.__file__)))
+except Exception as e:
+    print(e)
+''')"`
     if  [[ -d $MODULE_DIRECTORY ]]; then
         cd $MODULE_DIRECTORY
     else
@@ -148,7 +174,11 @@ mpass() {
     else
         length=12
     fi
-    _hash=`python -c "exec 'import os; print os.urandom(30).encode(\'base64\')[:${length}]'"`
-    echo $_hash | pbcopy
+    _hash=`python3 -c "
+import os,base64
+exec('print(base64.b64encode(os.urandom(64))[:${length}].decode(\'utf-8\'))')
+    "`
+    #echo $_hash | pbcopy
+    echo $_hash | xclip -selection clipboard
     echo "new password copied to the system clipboard"
 }
