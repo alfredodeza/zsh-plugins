@@ -103,7 +103,6 @@ rmv() {
 }
 
 mkv() {
-    set -x
     # A helper to create virtualenvs
     if [[ -n  $virtualensvhome ]] ; then
         echo "\nThe virtualenvshome variable is not set. Try setting it with"
@@ -120,7 +119,7 @@ mkv() {
                 . $dir/bin/activate
                 return 0
             else
-                virtualenv -p python3.6 "$virtualenvshome/$1"
+                python3 -m venv "$virtualenvshome/$1"
                 return 0
             fi
         done
