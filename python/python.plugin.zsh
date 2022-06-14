@@ -50,7 +50,7 @@ print(json.dumps(list(csv.reader(open(\'${1}\')))))
 # change to python package directory
 cdp() {
     module=$(sed 's/-/_/g' <<< $1)
-    MODULE_DIRECTORY=`python3 -c "
+    MODULE_DIRECTORY=`python -c "
 exec('''
 try:
     import os.path as _, ${module}
@@ -103,6 +103,7 @@ rmv() {
 }
 
 mkv() {
+    set -x
     # A helper to create virtualenvs
     if [[ -n  $virtualensvhome ]] ; then
         echo "\nThe virtualenvshome variable is not set. Try setting it with"
@@ -119,7 +120,8 @@ mkv() {
                 . $dir/bin/activate
                 return 0
             else
-                python3 -m venv "$virtualenvshome/$1"
+		python3 -m venv "$virtualenvshome/$1"
+                #virtualenv -p python3.6 "$virtualenvshome/$1"
                 return 0
             fi
         done
@@ -160,7 +162,15 @@ activate() {
 }
 
 welp() {
-    P_VERSION=`python -c "exec 'try: import pkg_resources; print pkg_resources.get_distribution(\'${1}\').version\nexcept Exception: print \'Not found\''"`
+    P_VERSION=`python -c "
+exec('''
+try:
+    import pkg_resources
+    print(pkg_resources.get_distribution(\'${1}\').version)
+except Exception:
+    print(\'Not found\')
+''')
+"`
     P_PATH=cdp
     echo "Path: $(try ${1})"
     echo "Version: ${P_VERSION}"
@@ -177,7 +187,41 @@ mpass() {
 import os,base64
 exec('print(base64.b64encode(os.urandom(64))[:${length}].decode(\'utf-8\'))')
     "`
-    #echo $_hash | pbcopy
-    echo $_hash | xclip -selection clipboard
+    echo $_hash | pbcopy
+    #echo $_hash | xclip -selection clipboard
     echo "new password copied to the system clipboard"
+}
+
+# Read JSON input and export key/values as environment variables
+j2env() {
+    local JSON="$(< /dev/stdin)"
+    PREFIX=$1
+    python3 -c "
+exec('''
+import json
+prefix = \'${PREFIX}\'
+parsed = json.loads(\'\'\'${JSON}\'\'\')
+count = 1
+for key, value in parsed.items():
+    print(f\"{ prefix }{ key.upper() }={ value.strip() }\")
+    count +=1
+''')" | while read -r value; do
+            export $value;
+        done
+}
+
+
+# Read JSON and extract a single value
+jget() {
+    KEY=$1
+    # comes from STDIN
+    local JSON="$(< /dev/stdin)"
+    VALUE=`python3 -c "
+exec('''
+import json
+
+parsed = json.loads(\'${JSON}\')
+print(parsed.get(\'${KEY}\'))
+''')"`
+    echo $VALUE
 }
